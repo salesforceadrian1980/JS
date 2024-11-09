@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web to Lead Form</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script>
+        var isCaptchaVerified = false;
+
+        function verifyCaptcha() {
+            isCaptchaVerified = true;
+            document.getElementById("captchaMessage").style.display = "none";
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById("leadForm").addEventListener("submit", function (event) {
+                // Clear previous error messages
+                document.getElementById("emailError").style.display = "none";
+                document.getElementById("captchaMessage").style.display = "none";
+
+                const emailInput = document.getElementById("email");
+                const emailValue = emailInput.value.trim();
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Regex for email validation
+                const bannedDomains = ["gmail.com", "yahoo.com"];
+
+                // Validate Email Format
+                if (!emailRegex.test(emailValue) || emailValue.split("@")[1] === "") {
+                    document.getElementById("emailError").textContent = "Please enter a valid business email address.";
+                    document.getElementById("emailError").style.display = "block";
+                    event.preventDefault();
+                    return;
+                }
+
+                // Block certain email domains
+                const emailDomain = emailValue.split("@")[1].toLowerCase();
+                if (bannedDomains.includes(emailDomain)) {
+                    document.getElementById("emailError").textContent = "Please use a business email address (no Gmail or Yahoo addresses).";
+                    document.getElementById("emailError").style.display = "block";
+                    event.preventDefault();
+                    return;
+                }
+
+                // CAPTCHA Verification
+                if (!isCaptchaVerified) {
+                    document.getElementById("captchaMessage").style.display = "block";
+                    event.preventDefault();
+                    return;
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+
+<form id="leadForm" action="https://webto.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8&orgId=00DHp000001rQ0v" method="POST">
+    <input type="hidden" name='captcha_settings' value='{"keyname":"recaptchav2","fallback":"true","orgId":"YOUR_ORG_ID","ts":""}'>
+    <input type="hidden" name="oid" value="00DHp000001rQ0v">
+    <input type="hidden" name="retURL" value="http://cloudsystm.com/thankyou">
+    <input id="lead_source" name="lead_source" type="hidden" value="Web" />
+
+    <label for="first_name">First Name</label>
+    <input id="first_name" maxlength="40" name="first_name" size="20" type="text" /><br>
+
+    <label for="last_name">Last Name</label>
+    <input id="last_name" maxlength="80" name="last_name" size="20" type="text" /><br>
+
+    <label for="email">Email</label>
+    <input id="email" maxlength="80" name="email" size="20" type="text" /><br>
+    <div id="emailError" style="color: red; display: none;"></div>
+
+    <label for="company">Company</label>
+    <input id="company" maxlength="40" name="company" size="20" type="text" /><br>
+
+    <div class="g-recaptcha" data-sitekey="YOUR_GOOGLE_RECAPTCHA" data-callback="verifyCaptcha"></div>
+    <div id="captchaMessage" style="color: red; display: none;">Please verify that you are not a robot.</div><br>
+    
+    <input type="submit" name="submit" value="Submit">
+</form>
+
+</body>
+</html>
